@@ -1,0 +1,403 @@
+{% extends 'base.html' %}
+
+{% block title %} User History{% endblock %}
+{% block content %}
+
+    {% if user.is_authenticated %}
+        <section class="container m_top_3 m_bottom_3">
+            <form action="/search/" class="search_box display_flex flex_row m_left_auto m_right_auto" method="get">
+                <input class="full_width" type="search" name="search" id="searchbox" placeholder="Enter your keyword">
+                <button id="searchBtn" class="button button_green_light m_left_1">Search</button>
+            </form>
+        </section>
+        <section>
+            <div class="container">
+                <div class="row ">
+                    <div class="column_12 search_result">
+                        <ul>
+                            {% if content %}
+                                {% autoescape off %}
+                                    {{ content }}
+                                {% endautoescape %}
+                            {% endif %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+    {% else %}
+
+        {#        when user not authenticated, will show this content#}
+        <section >
+            <div class="container">
+                {#    notice        #}
+                <div class="row m_bottom_3">
+                    <div class="column_12 notice">
+                        <span onclick="closeNotice(this)" class="close_notice"><i class="fas fa-times"></i></span>
+                        <h3>N.B:</h3>
+                        <ul class="m_left_3">
+                            <li>If you want to <b>search</b> anything you need to <b><a
+                                    href="{% url 'Login' %}">Login</a></b> First
+                            </li>
+                            <li>If you don't have an account, then <b><a href="{% url 'Register' %}">SignIn</a></b></li>
+                            <li>
+                                <b>Or you can Login in With:</b>
+                                <ul class="m_left_3">
+                                    <li>Username: koushik</li>
+                                    <li>Password: koushik</li>
+                                </ul>
+                                <b>Admin Panel:</b>
+                                <ul class="m_left_3">
+                                    <li>Username: admin</li>
+                                    <li>Password: admin</li>
+                                    <li><a href="/admin">click to go Admin panel</a></li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                {#    Title        #}
+                <div class="row m_bottom_3">
+                    <div class="column_12">
+                        <h2 class="title p_1">User Search History</h2>
+                    </div>
+                </div>
+
+                <div class="row ">
+                    {#    Data        #}
+                    <div class="column_8  ">
+                        <div id="search_result" class="accordion search_result">
+                            {% if content %}
+                                {% for c in  content %}
+                                    {% autoescape off %}
+                                        {% if c %}
+                                            <div class="accordion_item collapse">
+                                                <h3 class="accordion_title display_flex"
+                                                    onclick="handleAccordion(this)">
+                                                    <span class="m_right_2">{{ c.0 }}</span>
+                                                    <span class="m_left_auto m_right_2">User: {{ c.2 }}</span>
+                                                    <i class="fas fa-chevron-down"></i>
+                                                    <i class="fas fa-chevron-up display_none"></i>
+
+                                                </h3>
+                                                <div class="accordion_content">
+                                                    <div class="accordion_body">
+                                                        {{ c.1 }}
+                                                    </div>
+
+                                                </div>
+                                            </div>
+                                        {% endif %}
+                                    {% endautoescape %}
+                                {% endfor %}
+
+                            {% endif %}
+                        </div>
+                    </div>
+                    {#    Filter        #}
+                    <div class="column_4 filter p_left_5">
+                        <h3>All Keywords:</h3>
+                        <ul class="m_top_1" id="filter_by_keywords">
+                            {% if keywords %}
+                                {% for keyword, value in keywords.items %}
+                                    <li>
+                                        <input onchange='handleFilterByKeyword(this)' type="checkbox"
+                                               name="{{ keyword }}"
+                                               value="{{ keyword }}" id="key_{{ forloop.counter }}">
+                                        <label for="key_{{ forloop.counter }}">{{ keyword }} ({{ value }} times
+                                            found)</label>
+                                    </li>
+                                {% endfor %}
+
+                            {% endif %}
+                        </ul>
+                        <p id="filter_by_keywords_show_more" onclick="extendElement()" class="m_top_1"
+                           style="cursor: pointer; display: none">show
+                            All...</p>
+                        <p id="filter_by_keywords_show_less" onclick="collapseElement()" class="m_top_1"
+                           style="cursor: pointer; display: none">show
+                            less...</p>
+                        <br>
+                        <h3>All Users:</h3>
+                        <ul class="m_top_1">
+                            {% if username_list %}
+                                {% for username in username_list %}
+                                    <li>
+                                        <input onchange='handleFilterByUsername(this)' type="checkbox"
+                                               name="{{ username }}"
+                                               value="{{ username }}" id="user_key_{{ forloop.counter }}">
+                                        <label for="user_key_{{ forloop.counter }}">{{ username }}</label>
+                                    </li>
+                                {% endfor %}
+
+                            {% endif %}
+                        </ul>
+                        <br>
+                        <h3>Time Range:</h3>
+                        <ul class="m_top_1">
+                            <li>
+                                <input onchange='handleFilterByTimeRange(this)' type="checkbox" id="filter_yesterday"
+                                       value="yesterday" name="yesterday">
+                                <label for="filter_yesterday">See data from yesterday</label>
+                            </li>
+                            <li>
+                                <input onchange='handleFilterByTimeRange(this)' type="checkbox" id="filter_week"
+                                       value="last_week" name="week">
+                                <label for="filter_week">See data from last week</label>
+                            </li>
+                            <li>
+                                <input onchange='handleFilterByTimeRange(this)' type="checkbox" id="filter_last_month"
+                                       value="last_month" name="last_month">
+                                <label for="filter_last_month">Dee data from last month</label>
+                            </li>
+                        </ul>
+                        <br>
+                        <h3>Select Date:</h3>
+                        <ul class="m_top_1">
+                            <li>
+                                <label for="filter_start_date">Start Date:</label>
+                                <input onchange='handleFilterByDate(this)' type="date" id="filter_start_date"
+                                       name="start_date">
+                                <span onclick="clearDate(this)" data-name="clear_start_date"
+                                      class="m_left_1"
+                                      style="color: #f00d51; cursor: pointer">clear</span>
+                            </li>
+                            <br>
+                            <li>
+                                <label for="filter_end_date">End Date: </label>
+                                <input onchange='handleFilterByDate(this)' type="date" id="filter_end_date"
+                                       name="end_date">
+                                <span onclick="clearDate(this)" data-name="clear_end_date"
+                                      class="m_left_1"
+                                      style="color: #f00d51; cursor: pointer">clear</span>
+                            </li>
+
+
+                        </ul>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+    {% endif %}
+
+
+    <script>
+        let kw = []
+        let username = []
+        let yesterday = ''
+        let last_week = ''
+        let last_month = ''
+        let start_date = ''
+        let end_date = ''
+
+        function handleFilterByKeyword(param) {
+            const value = param.value
+            if (param.checked) {
+                kw.push(value)
+            } else {
+                let index = kw.indexOf(value);
+                if (index !== -1) {
+                    kw.splice(index, 1);
+                }
+            }
+            getContent()
+        }
+
+        function handleFilterByUsername(param) {
+            const value = param.value
+            if (param.checked) {
+                username.push(value)
+            } else {
+                let index = username.indexOf(value);
+                if (index !== -1) {
+                    username.splice(index, 1);
+                }
+            }
+            getContent()
+        }
+
+        function handleFilterByTimeRange(param) {
+            const value = param.value
+            if (param.checked) {
+                if (value === "yesterday") {
+                    yesterday = "yesterday"
+                }
+                if (value === "last_week") {
+                    last_week = "last_week"
+                }
+                if (value === "last_month") {
+                    last_month = "last_month"
+                }
+
+            } else {
+                if (value === "yesterday") {
+                    yesterday = ""
+                }
+                if (value === "last_week") {
+                    last_week = ""
+                }
+                if (value === "last_month") {
+                    last_month = ""
+                }
+            }
+            getContent()
+        }
+
+        function handleFilterByDate(param) {
+            const value = param.value
+            if (param.name === "start_date") {
+                start_date = value
+            }
+            if (param.name === "end_date") {
+                end_date = value
+            }
+            getContent()
+        }
+
+        function clearDate(param) {
+            name = param.getAttribute('data-name')
+            if (name === "clear_start_date") {
+                document.querySelector('#filter_start_date').value = ""
+                start_date = ''
+            }
+            if (name === "clear_end_date") {
+                document.querySelector('#filter_end_date').value = ""
+                end_date = ''
+            }
+        }
+
+        function getContent() {
+            const csrftoken = getCookie('csrftoken');
+            const request = new Request(
+                "",
+                {
+                    headers: {
+                        'X-CSRFToken': csrftoken, 'Accept': 'application/json, text/plain, */*',
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+            var data = new FormData();
+            data.append("json", JSON.stringify({keyword: kw.toString()}));
+            fetch(request, {
+                method: 'POST',
+                mode: 'same-origin',
+                body: JSON.stringify({
+                    keyword: kw,
+                    username: username,
+                    yesterday: yesterday,
+                    last_week: last_week,
+                    last_month: last_month,
+                    start_date: start_date,
+                    end_date: end_date
+                })
+            }).then(function (response) {
+                return response.json()
+            }).then(data => {
+                let htmlContent = ' '
+                data.content.map((c, index) => {
+                    htmlContent += `
+                        <div class="accordion_item collapse">
+                                                <h3 class="accordion_title display_flex"
+                                                    onclick="handleAccordion(this)">
+                                                    <span class="m_right_2">${c[0]}</span>
+                                                    <span class="m_left_auto m_right_2">User: ${c[2]}</span>
+                                                    <i class="fas fa-chevron-down"></i>
+                                                    <i class="fas fa-chevron-up display_none"></i>
+
+                                                </h3>
+                                                <div class="accordion_content">
+                                                    <div class="accordion_body">
+                                                                ${c[1]}
+                                                    </div>
+
+                                                </div>
+                                            </div>
+                    `
+
+                })
+                console.log(htmlContent)
+                document.querySelector("#search_result").innerHTML = htmlContent
+
+            });
+
+        }
+
+
+        function handleAccordion(event) {
+            event.classList.toggle('collapse')
+            const accordion_content = event.parentNode.querySelector('.accordion_content')
+            accordion_content.style.transition = 'all 0.5s ease-in-out'
+            const accordion_body_height = event.parentNode.querySelector('.accordion_body').clientHeight
+            if (event.classList.contains('collapse')) {
+                accordion_content.style.height = `${accordion_body_height}px`
+
+            } else {
+                accordion_content.style.height = `0`
+            }
+            const icon_down = event.parentNode.querySelector('.fa-chevron-down')
+            const icon_up = event.parentNode.querySelector('.fa-chevron-up')
+            if (icon_down.classList.contains('display_none')) {
+                icon_down.classList.remove('display_none')
+            } else {
+                icon_down.classList.add('display_none')
+            }
+            if (icon_up.classList.contains('display_none')) {
+                icon_up.classList.remove('display_none')
+            } else {
+                icon_up.classList.add('display_none')
+            }
+        }
+
+
+        const filter_by_keywords_section = document.querySelector("#filter_by_keywords")
+        const totalChild = filter_by_keywords_section.childElementCount
+        let showChild = 16
+        if (totalChild > showChild) {
+            for (let i = showChild; i < totalChild; i++) {
+                filter_by_keywords_section.children[i].style.display = 'none'
+            }
+            document.querySelector("#filter_by_keywords_show_more").style.display = 'block'
+        }
+
+        function extendElement() {
+            for (let i = 0; i < totalChild; i++) {
+                filter_by_keywords_section.children[i].style.display = 'block'
+                document.querySelector("#filter_by_keywords_show_more").style.display = 'none'
+                document.querySelector("#filter_by_keywords_show_less").style.display = 'block'
+            }
+        }
+
+        function collapseElement() {
+            for (let i = showChild; i < totalChild; i++) {
+                filter_by_keywords_section.children[i].style.display = 'none'
+                document.querySelector("#filter_by_keywords_show_more").style.display = 'block'
+                document.querySelector("#filter_by_keywords_show_less").style.display = 'none'
+            }
+        }
+
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        function closeNotice(param) {
+            param.parentElement.style.display ="none"
+        }
+
+    </script>
+{% endblock %}
+

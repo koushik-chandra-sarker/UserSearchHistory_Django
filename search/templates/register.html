@@ -1,0 +1,46 @@
+<!doctype html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Login</title>
+    <link rel="stylesheet" href="{% static 'css/searchStyle.css' %}">
+</head>
+<body>
+<div class="register_page display_flex justify_content_center align_item_center ">
+
+    <form class='p_3' method="post">
+        {% csrf_token %}
+        <div class="m_bottom_2">
+            {{ form.username }}
+        </div>
+        {% if form.username.errors %}
+            <div class="m_bottom_2 error">
+                {{ form.username.errors }}
+            </div>
+        {% endif %}
+        <div class="m_bottom_2">
+            {{ form.password1 }}
+        </div>
+        <div class="m_bottom_2">
+            {{ form.password2 }}
+        </div>
+        {% if form.password2.errors %}
+            <div class="m_bottom_2 error">
+                {{ form.password2.errors }}
+            </div>
+        {% endif %}
+
+        <button class="button full_width button_green_light m_bottom_1" type="submit">Submit</button>
+
+        <div class="">
+            Already have an account? <a href="{% url 'Login' %}">Login</a>
+        </div>
+    </form>
+
+</div>
+</body>
+</html>

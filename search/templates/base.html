@@ -1,0 +1,39 @@
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/searchStyle.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" integrity="sha512-1ycn6IcaQQ40/MKBW2W4Rhis/DbILU74C1vSrLJxCq57o941Ym01SwNsOMqvEBFlcgUa6xLiPY/NS5R+E6ztJQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+<body>
+   <header class="navbar navbar_color_dark p_top_1 p_bottom_1">
+     <nav class="container display_flex, align_item_center">
+        <a class="navbar_logo m_right_1" href="#">UserHistory</a>
+        <div class=" navbar_collapse display_flex align_item_center ">
+{#            <ul class="navbar_nav hover_bottom_border flex_row">#}
+{#                <li class="navbar_item">Home</li>#}
+{#            </ul>#}
+            {% if user.is_authenticated %}
+
+                <div class=" display_flex align_item_center m_left_auto">
+                    <h3 class="m_right_1">Welcome, {{ user.username }}</h3>
+                    <a class="button button_green_light" href="{% url 'Logout' %}">Logout</a>
+                </div>
+
+            {% else %}
+                  <a class="button button_green_light m_left_auto" href="{% url 'Login' %}">Login</a>
+                  <a class="button button_green_light m_left_1" href="{% url 'Register' %}">SignIn</a>
+            {% endif %}
+
+        </div>
+
+    </nav>
+</header>
+
+    {% block content %}
+    {% endblock %}
+</body>
+</html>
